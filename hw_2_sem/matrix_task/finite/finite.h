@@ -1,4 +1,6 @@
-#include"common/type_traits.h"
+#pragma once
+
+#include "common/type_traits.h"
 
 template<unsigned N, class Enable = void>
 class Finite;
@@ -8,8 +10,15 @@ class Finite<N, typename enable_if<(N > 0)>::type>
 {
 public:
     Finite(): Value_(0) {};
-    explicit Finite(signed int val): Value_(val) {
+    Finite(signed int val): Value_(val) {
         Normalize_();
+    }
+
+    Finite(const Finite<N>& src): Value_(src.Value_) {
+    }
+
+    bool operator==(const Finite<N>& rhs) const {
+        return Value_ == rhs.Value_;
     }
 
     Finite<N>& operator=(const Finite<N>& rhs) {
@@ -24,9 +33,9 @@ public:
     }
 
     Finite<N>& operator-=(const Finite<N>& rhs) {
-        Finite<N> res = *this;
-        res -= rhs;
-        return res;
+        Value_ -= rhs.Value_;
+        Normalize_();
+        return *this;
     }
 
     Finite<N>& operator*=(const Finite<N>& rhs) {
@@ -34,6 +43,7 @@ public:
         v %= N;
         Value_ = v;
         Normalize_();
+        return *this;
     }
 
     template<unsigned NC = N>
@@ -111,14 +121,14 @@ private:
     signed int Value_;
 
     void Normalize_() {
-        if (Value_ < -N) {
+        if (Value_ < -static_cast<signed int>(N)) {
             Value_ %= N;
         }
         if (Value_ < 0) {
             Value_ += N;
         } 
 
-        if (Value_ >= N) {
+        if (Value_ >= -static_cast<signed int>(N)) {
             Value_ %= N;
         }
     }

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "finite.h"
+#include "finite/finite.h"
 
 TEST(FINITE, TEST1) {
     //Finite<0> a; compile err
@@ -15,9 +15,4 @@ TEST(FINITE, TEST1) {
     Finite<17> y(13);
  
     ASSERT_EQ(13, (Finite<17>(11) * y / t).Representative());
-}
- 
-int main(int argc, char **argv) {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 }
