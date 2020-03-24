@@ -12,8 +12,7 @@ namespace NMmaintence {
 
         value_type val;
         value_type subSum;
-        value_type addValue;
-        value_type setValue; 
+        value_type extValue;
         value_type minValue;
         value_type maxValue;
 
@@ -28,7 +27,7 @@ namespace NMmaintence {
 
         template<typename U>
         Node<T>(U&& value)
-            : val(value), subSum(value), addValue(0), setValue(0), 
+            : val(value), subSum(value), extValue(0), 
             minValue(value), maxValue(value),
             left(nullptr), right(nullptr), parent(nullptr), size(1), 
             needRev(false), needSet(false), orderedDir(true), orderedRev(true) {}
@@ -88,35 +87,35 @@ namespace NMmaintence {
     template<typename T>
     inline void NodePush(Node<T>* v) {
         if (v) {
-            {
-                v->val += v->addValue;
-                if (v->left) {
-                    v->left->addValue += v->addValue;      
-                }
-
-                if (v->right) {
-                   v->right->addValue += v->addValue; 
-                }
-                v->subSum += v->addValue * static_cast<typename Node<T>::value_type>(v->size); 
-                v->minValue += v->addValue;
-                v->maxValue += v->addValue;
-                v->addValue = 0;
-            }
-
             if (v->needSet) {
-                v->val = v->setValue; 
+                v->val = v->extValue; 
                 if (v->left) {
-                    v->left->setValue = v->setValue;
+                    v->left->extValue = v->extValue;
+                    v->left->needSet = true;
                 }
                 if (v->right) {
-                    v->right->setValue = v->setValue;
+                    v->right->extValue = v->extValue;
+                    v->right->needSet = true;
                 }
 
-                v->maxValue = v->minValue = v->setValue;
+                v->maxValue = v->minValue = v->extValue;
                 v->orderedDir = v->orderedRev = true;
-                v->subSum = v->setValue * static_cast<typename Node<T>::value_type>(v->size);
+                v->subSum = v->extValue * static_cast<typename Node<T>::value_type>(v->size);
                 v->needSet = false;
-                v->setValue = 0;
+                v->extValue = 0;
+            } else {
+                v->val += v->extValue;
+                if (v->left) {
+                    v->left->extValue += v->extValue;      
+                }
+
+                if (v->right) {
+                   v->right->extValue += v->extValue; 
+                }
+                v->subSum += v->extValue * static_cast<typename Node<T>::value_type>(v->size); 
+                v->minValue += v->extValue;
+                v->maxValue += v->extValue;
+                v->extValue = 0;
             }
 
             if (v->needRev) {
@@ -490,6 +489,23 @@ public:
                     return t;
                 });
         return res;
+    }
+
+    void SubsegmentSet(size_type start_pos, size_type len, value_type value) {
+        root_ = NMmaintence::SubsegmentOperation(root_, start_pos, len, 
+                [&value](node_type* t) -> node_type* {
+                    t->extValue = value;
+                    t->needSet = true;
+                    return t;
+                });
+    }
+
+    void SubsegmentAdd(size_type start_pos, size_type len, value_type value) {
+        root_ = NMmaintence::SubsegmentOperation(root_, start_pos, len, 
+                [&value](node_type* t) -> node_type* {
+                    t->extValue += value;
+                    return t;
+                });
     }
 
     size_type size() const {
