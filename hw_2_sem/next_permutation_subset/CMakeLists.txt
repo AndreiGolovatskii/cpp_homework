@@ -12,3 +12,5 @@ include_directories(AFTER ${PROJECT_SOURCE_DIR})
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/splay)
 add_subdirectory(${PROJECT_SOURCE_DIR}/test)
+
+add_executable(main ${PROJECT_SOURCE_DIR}/task_contest/main.cpp)

@@ -34,7 +34,7 @@ namespace NMmaintence {
     };
 
     template<typename T, typename U, typename NodeAllocatorType>
-    inline Node<T>* GetNode(U&& value, NodeAllocatorType& nodeAlloc) {
+    Node<T>* GetNode(U&& value, NodeAllocatorType& nodeAlloc) {
         using AllocatorTraits = std::allocator_traits<NodeAllocatorType>;
 
         Node<T>* n = AllocatorTraits::allocate(nodeAlloc, 1);
@@ -43,7 +43,7 @@ namespace NMmaintence {
     }
 
     template<typename T, typename NodeAllocatorType>
-    inline void DestroyNode(Node<T>* node, NodeAllocatorType nodeAlloc) {
+    void DestroyNode(Node<T>* node, NodeAllocatorType nodeAlloc) {
         using AllocatorTraits = std::allocator_traits<NodeAllocatorType>;
 
         AllocatorTraits::destroy(nodeAlloc, node);
@@ -51,7 +51,7 @@ namespace NMmaintence {
     }
         
     template<typename T, typename NodeAllocatorType>
-    inline void RecursiveDestroy(Node<T>* node, NodeAllocatorType& nodeAlloc) {
+    void RecursiveDestroy(Node<T>* node, NodeAllocatorType& nodeAlloc) {
         if (node) {
             RecursiveDestroy(node->left, nodeAlloc);
             RecursiveDestroy(node->right, nodeAlloc);
@@ -74,6 +74,16 @@ namespace NMmaintence {
         return v ? v->subSum : 0;
     }
 
+    template<typename T>
+    inline bool NodeOrderedDir(Node<T>* v) {
+        return !v || v->orderedDir;
+    }
+
+    template<typename T>
+    inline bool NodeOrderedRev(Node<T>* v) {
+        return !v || v->orderedRev;
+    }
+    
     template<typename T>
     inline void NodePush(Node<T>* v) {
         if (v) {
@@ -668,3 +678,60 @@ private:
     NodeAllocatorType_ nodeAlloc_;
     mutable NMmaintence::Node<value_type>* root_;
 };
+
+int main() {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(0);
+    std::cout.tie(0);
+
+    size_t n;
+    std::cin >> n;
+    
+    TSplayTree<int64_t> s(n);
+    for (size_t i = 0; i < n; ++i) {
+        std::cin >> s[i];
+    }
+    size_t q;
+    std::cin >> q;
+    for (size_t i = 0; i < q; ++i) {
+        int t;
+        std::cin >> t;
+        if (t == 1) {
+            size_t l, r;
+            std::cin >> l >> r;
+            std::cout << s.SubsegmentSum(l, r - l + 1) << "\n";
+        } else if (t == 2) {
+            int x;
+            size_t pos;
+            std::cin >> x >> pos;
+            s.Insert(pos, x);
+        } else if (t == 3) {
+            size_t pos;
+            std::cin >> pos;
+            s.Erase(pos);
+        } else if (t == 4) {
+            int x;
+            size_t l, r;
+            std::cin >> x >> l >> r;
+            s.SubsegmentSet(l, r - l + 1, x);
+        } else if (t == 5) {
+            int x;
+            size_t l, r;
+            std::cin >> x >> l >> r;
+            s.SubsegmentAdd(l, r - l + 1, x);
+        } else if (t == 6) {
+            size_t l, r;
+            std::cin >> l >> r;
+            s.SubsegmentNextPermutation(l, r - l + 1);
+        } else if (t == 7) {
+            size_t l, r;
+            std::cin >> l >> r;
+            s.SubsegmentPrevPermutation(l, r - l + 1);
+        }
+    }
+
+    for (size_t i = 0; i < s.size(); ++i) {
+        std::cout << s[i] << " ";
+    }
+    std::cout << std::endl;
+}

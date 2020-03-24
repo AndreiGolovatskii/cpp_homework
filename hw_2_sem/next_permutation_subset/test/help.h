@@ -19,7 +19,7 @@ void RandomInsert(U& s, P& v) {
     size_t size = s.size();
 
     size_t id = rnd() % size;
-    int value = rnd(); 
+    int64_t value = rnd(); 
 
     s.Insert(id, value);
     v.insert(v.begin() + id, value);
@@ -27,8 +27,8 @@ void RandomInsert(U& s, P& v) {
 }
 
 template<class T>
-int SegmentSum(T& v, size_t start, size_t len) {
-    int res = 0;
+int64_t SegmentSum(T& v, size_t start, size_t len) {
+    int64_t res = 0;
     for (size_t i = 0; i < len; ++i) {
         res += v[start + i];
     }
@@ -36,8 +36,8 @@ int SegmentSum(T& v, size_t start, size_t len) {
 }
 
 template<class T>
-int SegmentMin(T& v, size_t start, size_t len) {
-    int res = v[start];
+int64_t SegmentMin(T& v, size_t start, size_t len) {
+    int64_t res = v[start];
     for (size_t i = 0; i < len; ++i) {
         res = std::min(v[start + i], res);
     }
@@ -45,8 +45,8 @@ int SegmentMin(T& v, size_t start, size_t len) {
 }
 
 template<class T>
-int SegmentMax(T& v, size_t start, size_t len) {
-    int res = v[start];
+int64_t SegmentMax(T& v, size_t start, size_t len) {
+    int64_t res = v[start];
     for (size_t i = 0; i < len; ++i) {
         res = std::max(v[start + i], res);
     }
@@ -67,38 +67,38 @@ void RandomSubsegementValuesCheck(U& s, P& v) {
 
     size_t len = finish - start + 1;
 
-    int s_sum = s.SubsegmentSum(start, len);
-    int v_sum = SegmentSum(v, start, len);
+    int64_t s_sum = s.SubsegmentSum(start, len);
+    int64_t v_sum = SegmentSum(v, start, len);
     ASSERT_EQ(s_sum, v_sum); 
 
-    int s_min = s.SubsegmentMin(start, len);
-    int v_min = SegmentMin(v, start, len);
+    int64_t s_min = s.SubsegmentMin(start, len);
+    int64_t v_min = SegmentMin(v, start, len);
     ASSERT_EQ(s_min, v_min); 
 
-    int s_max = s.SubsegmentMax(start, len);
-    int v_max = SegmentMax(v, start, len);
+    int64_t s_max = s.SubsegmentMax(start, len);
+    int64_t v_max = SegmentMax(v, start, len);
     ASSERT_EQ(s_max, v_max); 
 }
 
 template<class T>
-void SubsegmentSet(T& v, size_t start, size_t len, int val) {
+void SubsegmentSet(T& v, size_t start, size_t len, int64_t val) {
     for (size_t i = 0; i < len; ++i) {
         v[i + start] = val;
     }
 }
 
 template<class T>
-void SubsegmentAdd(T& v, size_t start, size_t len, int val) {
+void SubsegmentAdd(T& v, size_t start, size_t len, int64_t val) {
     for (size_t i = 0; i < len; ++i) {
         v[i + start] += val;
     }
 }
 
 template<class U, class P>
-void RandomSubsegementSetValue(U& s, P& v) {
+void RandomSubsegementSetValue(U& s, P& v, int64_t mod = 1e9) {
     ASSERT_EQ(v.size(), s.size());
     size_t size = s.size();
-    int val = rnd();
+    int64_t val = rnd() % mod;
 
     size_t start = rnd() % size;
     size_t finish = rnd() % size;
@@ -114,10 +114,10 @@ void RandomSubsegementSetValue(U& s, P& v) {
 }
 
 template<class U, class P>
-void RandomSubsegementAddValue(U& s, P& v) {
+void RandomSubsegementAddValue(U& s, P& v, int64_t mod = 1e9) {
     ASSERT_EQ(v.size(), s.size());
     size_t size = s.size();
-    int val = rnd();
+    int64_t val = rnd() % mod;
 
     size_t start = rnd() % size;
     size_t finish = rnd() % size;
@@ -149,3 +149,58 @@ void AssertEqual(U& s, T& v) {
         ASSERT_EQ(s[i], v[i]);
     }
 }
+
+template<class U, class P>
+void RandomSubsegementReverse(U& s, P& v) {
+    ASSERT_EQ(v.size(), s.size());
+    size_t size = s.size();
+
+    size_t start = rnd() % size;
+    size_t finish = rnd() % size;
+   
+    if (finish < start) {
+        std::swap(finish, start);
+    }
+
+    size_t len = finish - start + 1;
+
+    s.SubsegmentReverse(start, len);
+    std::reverse(v.begin() + start, v.begin() + start + len);
+}
+
+template<class U, class P>
+void RandomSubsegementNextPermutation(U& s, P& v) {
+    ASSERT_EQ(v.size(), s.size());
+    size_t size = s.size();
+
+    size_t start = rnd() % size;
+    size_t finish = rnd() % size;
+   
+    if (finish < start) {
+        std::swap(finish, start);
+    }
+
+    size_t len = finish - start + 1;
+
+    s.SubsegmentNextPermutation(start, len);
+    std::next_permutation(v.begin() + start, v.begin() + start + len);
+}
+
+template<class U, class P>
+void RandomSubsegementPrevPermutation(U& s, P& v) {
+    ASSERT_EQ(v.size(), s.size());
+    size_t size = s.size();
+
+    size_t start = rnd() % size;
+    size_t finish = rnd() % size;
+   
+    if (finish < start) {
+        std::swap(finish, start);
+    }
+
+    size_t len = finish - start + 1;
+
+    s.SubsegmentPrevPermutation(start, len);
+    std::prev_permutation(v.begin() + start, v.begin() + start + len);
+}
+
