@@ -34,7 +34,7 @@ namespace NMmaintence {
     };
 
     template<typename T, typename U, typename NodeAllocatorType>
-    Node<T>* GetNode(U&& value, NodeAllocatorType& nodeAlloc) {
+    inline Node<T>* GetNode(U&& value, NodeAllocatorType& nodeAlloc) {
         using AllocatorTraits = std::allocator_traits<NodeAllocatorType>;
 
         Node<T>* n = AllocatorTraits::allocate(nodeAlloc, 1);
@@ -43,7 +43,7 @@ namespace NMmaintence {
     }
 
     template<typename T, typename NodeAllocatorType>
-    void DestroyNode(Node<T>* node, NodeAllocatorType nodeAlloc) {
+    inline void DestroyNode(Node<T>* node, NodeAllocatorType nodeAlloc) {
         using AllocatorTraits = std::allocator_traits<NodeAllocatorType>;
 
         AllocatorTraits::destroy(nodeAlloc, node);
@@ -51,7 +51,7 @@ namespace NMmaintence {
     }
         
     template<typename T, typename NodeAllocatorType>
-    void RecursiveDestroy(Node<T>* node, NodeAllocatorType& nodeAlloc) {
+    inline void RecursiveDestroy(Node<T>* node, NodeAllocatorType& nodeAlloc) {
         if (node) {
             RecursiveDestroy(node->left, nodeAlloc);
             RecursiveDestroy(node->right, nodeAlloc);
@@ -75,62 +75,50 @@ namespace NMmaintence {
     }
 
     template<typename T>
-    inline bool NodeOrderedDir(Node<T>* v) {
-        return !v || v->orderedDir;
-    }
-
-    template<typename T>
-    inline bool NodeOrderedRev(Node<T>* v) {
-        return !v || v->orderedRev;
-    }
-    
-    template<typename T>
     inline void NodePush(Node<T>* v) {
-        if (v) {
-            if (v->needSet) {
-                v->val = v->extValue; 
-                v->maxValue = v->minValue = v->extValue;
-                if (v->left) {
-                    v->left->extValue = v->extValue;
-                    v->left->needSet = true;
-                }
-                if (v->right) {
-                    v->right->extValue = v->extValue;
-                    v->right->needSet = true;
-                }
-
-                v->orderedDir = v->orderedRev = true;
-                v->subSum = v->extValue * static_cast<typename Node<T>::value_type>(v->size);
-                v->needSet = false;
-                v->extValue = 0;
-
-            } else {
-                v->val += v->extValue;
-                v->minValue += v->extValue;
-                v->maxValue += v->extValue;
-                if (v->left) {
-                    v->left->extValue += v->extValue;      
-                }
-
-                if (v->right) {
-                   v->right->extValue += v->extValue; 
-                }
-                v->subSum += v->extValue * static_cast<typename Node<T>::value_type>(v->size); 
-                v->extValue = 0;
+        if (!v) {
+            return;
+        }
+        if (v->needSet) {
+            v->val = v->maxValue = v->minValue = v->extValue;
+            if (v->left) {
+                v->left->extValue = v->extValue;
+                v->left->needSet = true;
+            }
+            if (v->right) {
+                v->right->extValue = v->extValue;
+                v->right->needSet = true;
             }
 
-            if (v->needRev) {
-                std::swap(v->left, v->right);
-                std::swap(v->orderedDir, v->orderedRev);
-
-                if (v->left) {
-                    v->left->needRev ^= 1;
-                }
-                if (v->right) {
-                    v->right->needRev ^= 1;
-                }
-                v->needRev = false;
+            v->orderedDir = v->orderedRev = true;
+            v->subSum = v->extValue * static_cast<typename Node<T>::value_type>(v->size);
+            v->needSet = false;
+            v->extValue = 0;
+        } else {
+            v->val += v->extValue;
+            v->minValue += v->extValue;
+            v->maxValue += v->extValue;
+            if (v->left) {
+                v->left->extValue += v->extValue;      
             }
+            if (v->right) {
+               v->right->extValue += v->extValue; 
+            }
+            v->subSum += v->extValue * static_cast<typename Node<T>::value_type>(v->size); 
+            v->extValue = 0;
+        }
+
+        if (v->needRev) {
+            std::swap(v->left, v->right);
+            std::swap(v->orderedDir, v->orderedRev);
+
+            if (v->left) {
+                v->left->needRev ^= 1;
+            }
+            if (v->right) {
+                v->right->needRev ^= 1;
+            }
+            v->needRev = false;
         }
     }
 
@@ -138,18 +126,18 @@ namespace NMmaintence {
     inline void NodeOrderUpdate(Node<T>* v) {
         v->orderedDir = v->orderedRev = true;
         if (v->left) {
-            if (v->left->maxValue > v->val || !v->left->orderedDir) {
+            if (!v->left->orderedDir || v->left->maxValue > v->val) {
                 v->orderedDir = false;  
             }
-            if (v->left->minValue < v->val || !v->left->orderedRev) {
+            if (!v->left->orderedRev || v->left->minValue < v->val) {
                 v->orderedRev = false;
             }
         }
         if (v->right) {
-            if (v->right->minValue < v->val || !v->right->orderedDir) {
+            if (!v->right->orderedDir || v->right->minValue < v->val) {
                 v->orderedDir = false;
             }
-            if (v->right->maxValue > v->val || !v->right->orderedRev) {
+            if (!v->right->orderedRev || v->right->maxValue > v->val) {
                 v->orderedRev = false;
             }
         }
@@ -182,11 +170,7 @@ namespace NMmaintence {
     template<typename T>
     inline void RotateLeft(Node<T>* v) {
         Node<T>* vParent = v->parent;
-        //NodePush(vParent);
-        //NodePush(v);
-
         Node<T>* right = v->right;
-        //NodePush(right);
 
         if (vParent) {
             if (IsLeftChild(v)) {
@@ -212,11 +196,7 @@ namespace NMmaintence {
     template<typename T>
     inline void RotateRight(Node<T>* v) {
         Node<T>* vParent = v->parent;
-        //NodePush(vParent);
-        //NodePush(v);
-
         Node<T>* left = v->left;
-        //NodePush(left);
 
         if (vParent) {
             if (IsRightChild(v)) {
@@ -337,7 +317,6 @@ namespace NMmaintence {
         }
         typename Node<T>::size_type lsh_size = NodeSize(lhs);
         lhs = MakeRoot(lhs, lsh_size - 1);
-        NodePush(lhs);
         lhs->right = rhs;
         UpdateParent(rhs, lhs);
         NodeUpdate(lhs);
@@ -348,7 +327,6 @@ namespace NMmaintence {
     template<typename T>
     inline std::pair<Node<T>*, Node<T>*> Split(Node<T>* root, 
                                                typename Node<T>::size_type leftSize) {
-        NodePush(root);
         if (!root) {
             return std::make_pair(nullptr, nullptr);
         }
@@ -357,11 +335,9 @@ namespace NMmaintence {
             return std::make_pair(root, nullptr);
         }
         root = MakeRoot(root, leftSize);
-        NodePush(root);
-            
+
         Node<T>* l = root->left;
         UpdateParent(l, nullptr);
-        NodePush(l);
 
         Node<T>* r = root;
         r->left = nullptr;
@@ -380,7 +356,6 @@ namespace NMmaintence {
         new_node->right = r;
 
         UpdateParent(l, new_node);
-
         UpdateParent(r, new_node);
 
         NodeUpdate(new_node);
@@ -419,10 +394,11 @@ namespace NMmaintence {
     inline typename Node<T>::size_type GetOrderedSuffixLen(Node<T>* root, bool dirOrder) {
         typename Node<T>::value_type requiredVal;
         bool isVal = false;
+
         typename Node<T>::size_type len = 0;
         NodePush(root);
-        while (root) {
-            if (dirOrder) {
+        if (dirOrder) {
+            while (root) {
                 if (isVal && root->val > requiredVal) {
                     root = root->right;
                     NodePush(root);
@@ -431,7 +407,7 @@ namespace NMmaintence {
 
                 NodePush(root->right);
                 if (!root->right || (root->right->orderedDir && 
-                                    (!isVal || root->right->maxValue <= requiredVal) &&
+                                     (!isVal || root->right->maxValue <= requiredVal) &&
                                      root->right->minValue >= root->val)) {
                     requiredVal = root->val;
                     isVal = true;
@@ -439,10 +415,13 @@ namespace NMmaintence {
 
                     root = root->left;
                     NodePush(root);
-                    
                     continue;
                 }
-            } else { 
+                root = root->right;
+                NodePush(root);
+            }
+        } else { 
+            while (root) {
                 if (isVal && root->val < requiredVal) {
                     root = root->right;
                     NodePush(root);
@@ -451,7 +430,7 @@ namespace NMmaintence {
 
                 NodePush(root->right);
                 if (!root->right || (root->right->orderedRev && 
-                                    (!isVal || root->right->minValue >= requiredVal) &&
+                                     (!isVal || root->right->minValue >= requiredVal) &&
                                      root->right->maxValue <= root->val)) {
                     requiredVal = root->val;
                     isVal = true;
@@ -459,13 +438,11 @@ namespace NMmaintence {
 
                     root = root->left;
                     NodePush(root);
-
                     continue;
                 }
+                root = root->right;
+                NodePush(root);
             }
-
-            root = root->right;
-            NodePush(root);
         }
         return len;
     }
@@ -477,20 +454,12 @@ namespace NMmaintence {
         NodePush(root);
         typename Node<T>::size_type len = 0;
         while(root) {
-            if (dirOrder) {
-                if (root->val < val) {
-                    len += 1 + NodeSize(root->left);
-                    root = root->right;
-                } else {
-                    root = root->left;
-                }
+            if ((dirOrder && root->val < val) ||
+                (!dirOrder && root->val > val)) {
+                len += 1 + NodeSize(root->left);
+                root = root->right;
             } else {
-                if (root->val > val) {
-                    len += 1 + NodeSize(root->left);
-                    root = root->right;
-                } else {
-                    root = root->left;
-                }
+                root = root->left;
             }
             NodePush(root);
         }
@@ -498,50 +467,22 @@ namespace NMmaintence {
     }
 
     template<typename T>
-    inline Node<T>* NextPermutation(Node<T>* root) {
-        NodePush(root);
+    inline Node<T>* Permutation(Node<T>* root, bool isNext) {
         if (!root) {
             return nullptr;
         }
-        if (root->orderedRev) {
+        if ((isNext && root->orderedRev) ||
+            (!isNext && root->orderedDir)) {
             root->needRev ^= 1;
             return root;
         }
 
-        typename Node<T>::size_type suffixLen = GetOrderedSuffixLen(root, false);
+        typename Node<T>::size_type suffixLen = GetOrderedSuffixLen(root, !isNext);
         auto [l, r] = Split(root, NodeSize(root) - suffixLen);
         l = MakeRoot(l, NodeSize(l) - 1);
         NodePush(l);
 
-        typename Node<T>::size_type swapPos = GLValPrefixLen(r, l->val, false) - 1;
-        r = MakeRoot(r, swapPos);
-        NodePush(r);
-
-        std::swap(l->val, r->val);
-        NodeUpdate(r);
-        NodeUpdate(l);
-
-        r->needRev = true;
-        return Merge(l, r);
-    }
-
-    template<typename T>
-    inline Node<T>* PrevPermutation(Node<T>* root) {
-        NodePush(root);
-        if (!root) {
-            return nullptr;
-        }
-        if (root->orderedDir) {
-            root->needRev ^= 1;
-            return root;
-        }
-
-        typename Node<T>::size_type suffixLen = GetOrderedSuffixLen(root, true);
-        auto [l, r] = Split(root, NodeSize(root) - suffixLen);
-        l = MakeRoot(l, NodeSize(l) - 1);
-        NodePush(l);
-
-        typename Node<T>::size_type swapPos = GLValPrefixLen(r, l->val, true) - 1;
+        typename Node<T>::size_type swapPos = GLValPrefixLen(r, l->val, !isNext) - 1;
         r = MakeRoot(r, swapPos);
         NodePush(r);
 
@@ -652,14 +593,14 @@ public:
     void SubsegmentNextPermutation(size_type start_pos, size_type len) {
         root_ = NMmaintence::SubsegmentOperation(root_, start_pos, len,
                 [](node_type* t) -> node_type* {
-                    return NMmaintence::NextPermutation(t);
+                    return NMmaintence::Permutation(t, true);
                 });
     }
 
     void SubsegmentPrevPermutation(size_type start_pos, size_type len) {
         root_ = NMmaintence::SubsegmentOperation(root_, start_pos, len,
                 [](node_type* t) -> node_type* {
-                    return NMmaintence::PrevPermutation(t);
+                    return NMmaintence::Permutation(t, false);
                 });
     }
 

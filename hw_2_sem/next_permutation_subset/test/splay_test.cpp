@@ -270,3 +270,4 @@ TEST(Splay, sample) {
     s.SubsegmentNextPermutation(0, 3 - 0 + 1);
     s.Erase(2);
 }
+
